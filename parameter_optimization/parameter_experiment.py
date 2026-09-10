@@ -14,7 +14,7 @@ BASE_SEED = 5000
 
 machine = input("Machine 1 or 2? (1/2): ")
 if machine == "2":
-    start_rep = 2
+    start_rep = 20
 else:
     start_rep = 0
 

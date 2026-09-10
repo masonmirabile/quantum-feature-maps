@@ -35,20 +35,31 @@ def make_circuit(feature_map_name, layers):
     return circuit
 
 def train_vqc(X_train, y_train, X_eval, y_eval, feature_map_name="angle",
-              layers=4, lr=.05, steps=150, seed=0):
+              layers=4, lr=.05, threshold=1e-4, max_steps=1000, seed=0):
 
     np.random.seed(seed)
     circuit = make_circuit(feature_map_name, layers)
     weights = .01*np.random.randn(layers, 2, 3, requires_grad=True)
     opt = qml.AdamOptimizer(stepsize=lr)
 
-    # mean squared error between pauli-z output and -1/+1 labels
     def loss(weights):
         preds = np.array([circuit(x, weights) for x in X_train])
         return np.mean((preds-y_train)**2)
 
-    for _ in range(steps):
+    old_loss = loss(weights)
+    steps = 0
+    converged = False
+
+    while steps < max_steps:
         weights = opt.step(loss, weights)
+        new_loss = loss(weights)
+        steps += 1
+
+        if abs(new_loss - old_loss) < threshold:
+            converged = True
+            break
+
+        old_loss = new_loss
 
     train_preds = np.array([circuit(x, weights) for x in X_train])
     eval_preds = np.array([circuit(x, weights) for x in X_eval])
@@ -59,5 +70,7 @@ def train_vqc(X_train, y_train, X_eval, y_eval, feature_map_name="angle",
     return {
         "train_acc": float(train_acc),
         "eval_acc": float(eval_acc),
+        "steps": steps,
+        "converged": converged,
         "weights": weights
     }

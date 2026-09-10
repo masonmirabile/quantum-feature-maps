@@ -12,6 +12,12 @@ N = 500
 FILE = "parameter_results.csv"
 BASE_SEED = 5000
 
+machine = input("Machine 1 or 2? (1/2): ")
+if machine == "2":
+    start_rep = 2
+else:
+    start_rep = 0
+
 mode = input("Run by hours or repetitions? (h/r): ").lower()
 
 if mode == "h":
@@ -19,7 +25,8 @@ if mode == "h":
     end_time = time.time() + hours * 3600
     target_reps = None
 else:
-    target_reps = int(input("Target repetitions per condition: "))
+    num_reps = int(input("Target repetitions per condition: "))
+    target_reps = start_rep + num_reps
     end_time = None
 
 # load completed runs
@@ -40,10 +47,10 @@ if os.path.exists(FILE):
 
 fields = [
     "rep", "seed", "dataset", "noise", "feature_map",
-    "layers", "lr", "train_acc", "eval_acc"
+    "layers", "lr", "train_acc", "eval_acc", "steps", "converged"
 ]
 
-rep = 0
+rep = start_rep
 
 while True:
     # in repetition mode, stop once every condition has enough reps
@@ -78,7 +85,8 @@ while True:
                             feature_map_name=feature_map,
                             layers=layers,
                             lr=lr,
-                            steps=150,
+                            threshold=1e-4,
+                            max_steps=1000,
                             seed=seed
                         )
 
@@ -91,7 +99,9 @@ while True:
                             "layers": layers,
                             "lr": lr,
                             "train_acc": result["train_acc"],
-                            "eval_acc": result["eval_acc"]
+                            "eval_acc": result["eval_acc"],
+                            "steps": result["steps"],
+                            "converged": result["converged"]
                         }
 
                         # save every completed run immediately
@@ -110,7 +120,9 @@ while True:
                             feature_map,
                             "layers", layers,
                             "lr", lr,
-                            "acc", round(result["eval_acc"], 3)
+                            "acc", round(result["eval_acc"], 3),
+                            "steps", result["steps"],
+                            "converged", result["converged"]
                         )
 
     rep += 1

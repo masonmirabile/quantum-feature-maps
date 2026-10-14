@@ -1,4 +1,0 @@
-pennylane
-pennylane-lightning
-numpy
-scikit-learn

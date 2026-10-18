@@ -6,7 +6,7 @@ from data import DATASETS, get_train_eval_data
 from vqc import FEATURE_MAPS, train_vqc
 
 NOISE_LEVELS = range(1, 12)
-REPS = 8
+REPS = 30
 BASE_SEED = 10000
 N = 500
 LAYERS = 4
